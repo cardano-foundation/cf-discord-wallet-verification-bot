@@ -1,5 +1,12 @@
 # 🤖 Discord Verification Bot 🤝
 
+<p align="left">
+<img alt="Release" src="https://github.com/cardano-foundation/cf-discord-wallet-verification-bot/actions/workflows/release.yaml/badge.svg?branch=main" />
+<a href="https://conventionalcommits.org"><img alt="conventionalcommits" src="https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits" /></a>
+<a href="https://opensource.org/licenses/MIT"><img alt="License" src="https://img.shields.io/badge/License-MIT-green.svg" /></a>
+</p>
+
+
 This bot aims to provide a wallet and user association based on the user's discord account.
 
 ## 🦾 Getting Started
