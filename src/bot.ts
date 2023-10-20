@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import "dotenv/config";
 import axios from 'axios';
 import { Client, GatewayIntentBits, Partials, Events, TextChannel, ButtonStyle, ButtonBuilder, ActionRowBuilder, ButtonInteraction } from 'discord.js';
 import crypto from 'crypto';
