@@ -11,24 +11,34 @@ const {
     DISCORD_TOKEN,
     BACKEND_BASE_URL,
     FRONTEND_URL,
+    BACKEND_BASIC_AUTH_ENABLED,
     BACKEND_BASIC_AUTH_PASSWORD,
     BACKEND_BASIC_AUTH_USER,
     VERIFIED_ROLE_ID,
     CHANNEL_ID,
     GUILD_ID,
-    DISCORD_VERIFICATION_BOT_SALT
+    DISCORD_VERIFICATION_BOT_SALT,
+    BOT_MESSAGE_WELCOME,
+    BOT_MESSAGE_SUCCESS,
+    BOT_MESSAGE_ALREADY_VERIFIED,
+    BOT_MESSAGE_RULES_NOT_ACCEPTED,
+    BOT_BUTTON_LABEL,
+    BOT_SUCCESS_BUTTON_LABEL,
+    BOT_ERROR_MESSAGE,
 } = process.env;
 
-const token = Buffer.from(
-    `${BACKEND_BASIC_AUTH_USER}:${BACKEND_BASIC_AUTH_PASSWORD}`,
-    'utf8'
-).toString('base64');
-const authenticationHeader = {
-    headers: {
+const authenticationHeader = {};
+
+if (BACKEND_BASIC_AUTH_ENABLED) {
+    const token = Buffer.from(
+        `${BACKEND_BASIC_AUTH_USER}:${BACKEND_BASIC_AUTH_PASSWORD}`,
+        'utf8'
+    ).toString('base64');
+    authenticationHeader['headers'] = {
         'x-cf-login-system': 'BASIC',
         Authorization: `Basic ${token}`,
-    },
-};
+    };
+}
 
 const client = new Client({
     partials: [Partials.Channel],
@@ -61,18 +71,18 @@ client.once(Events.ClientReady, async (client) => {
         const hasBotPostedInChannel = messages.some(message => message.author.id === client.user.id);
         if (!hasBotPostedInChannel) {
             const button = new ButtonBuilder()
-                .setLabel('Start Wallet Verification')
+                .setLabel(BOT_BUTTON_LABEL || 'Start Wallet Verification')
                 .setCustomId('start_wallet_verification')
                 .setStyle(ButtonStyle.Success);
 
 		    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
 
             channel.send({
-                content: 'Click the button below to verify your wallet',
+                content: BOT_MESSAGE_WELCOME || 'Click the button below to verify your wallet',
                 components: [actionRow],
             })
         } else {
-            console.log('The bot has already posted the button into this channel');
+            log.debug('The bot has already posted the button into this channel');
         }
     }
 });
@@ -81,6 +91,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (interaction.user.bot) return;
 
     if (interaction.isButton) {
+        const errorReply = BOT_ERROR_MESSAGE || `Hi ${interaction.user.username}, something went wrong. Please try again later.`;
+
         interaction = (interaction as ButtonInteraction);
         try {
             const discordUserId = interaction.user.id;
@@ -93,8 +105,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 });
 
                 if (!guildMember.roles.cache.hasAny(VERIFIED_ROLE_ID)) {
+                    const reply = BOT_MESSAGE_RULES_NOT_ACCEPTED || `Hi ${interaction.user.username}, you need to accept our terms and conditions by reacting with a 🚀 emoji to the message within the verification channel. Click the button again once you have accepted the terms and conditions.`;
+
                     interaction.reply({
-                        content: `Hi ${interaction.user.username}, your need to accept our terms and conditions by reacting with a 🚀 emoji to the message within the verification channel. Click the button again once you have accepted the terms and conditions.`,
+                        content: reply.replaceAll('${USERNAME}', interaction.user.username),
                         ephemeral: true,
                     });
                     return;
@@ -102,7 +116,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             } catch (error) {
                 log.error((error as Error).message);
                 interaction.reply({
-                    content: `Hi ${interaction.user.username}, something went wrong. Please try again later.`,
+                    content: errorReply.replaceAll('${USERNAME}', interaction.user.username),
                     ephemeral: true
                 });
                 return;
@@ -113,11 +127,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .update(DISCORD_VERIFICATION_BOT_SALT + discordUserId)
                 .digest('hex');
 
-            const response = await axios.get(`${BACKEND_BASE_URL}/api/discord/user-verification/is-verified/${hashedDiscordId}`, authenticationHeader);
+            const response = await axios.get(`${BACKEND_BASE_URL}/is-verified/${hashedDiscordId}`, authenticationHeader);
 
             if (response.data.verified) {
+                const reply = BOT_MESSAGE_ALREADY_VERIFIED || `Hi ${interaction.user.username}, you have already verified your wallet!`;
+
                 interaction.reply({
-                    content: `Hi ${interaction.user.username}, you have already verified your wallet!`,
+                    content: reply.replaceAll('${USERNAME}', interaction.user.username),
                     ephemeral: true
                 });
                 return;
@@ -125,39 +141,41 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
             const randomSecret = generateAuthenticationSecret();
             try {
-                const startVerificationResponse = await axios.post(`${BACKEND_BASE_URL}/api/discord/user-verification/start-verification`, {
+                const startVerificationResponse = await axios.post(`${BACKEND_BASE_URL}/start-verification`, {
                     discordIdHash: hashedDiscordId,
                     secret: randomSecret,
                 }, authenticationHeader);
 
                 if (startVerificationResponse.status !== 200) {
                     interaction.reply({
-                        content: `Hi ${interaction.user.username}, something went wrong. Please try again later.`,
+                        content: errorReply.replaceAll('${USERNAME}', interaction.user.username),
                         ephemeral: true
                     });
                     return;
                 }
 
                 const button = new ButtonBuilder()
-                    .setLabel('Finish Wallet Verification')
+                    .setLabel(BOT_SUCCESS_BUTTON_LABEL || 'Finish Wallet Verification')
                     .setURL(`${FRONTEND_URL}?action=verification&secret=${hashedDiscordId}|${randomSecret}`)
                     .setStyle(ButtonStyle.Link);
 
+                const reply = BOT_MESSAGE_SUCCESS || `Thank you ${interaction.user}, please follow this link to finish the verification process on our website!`;
+
                 const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
                 await interaction.reply({
-                    content: `Thank you ${interaction.user}, please click that button to finish the verification process in Cardano Ballot!`,
+                    content: reply.replaceAll('${USERNAME}', interaction.user.username),
                     ephemeral: true,
                     components: [actionRow],
                 });
             } catch (error) {
                 log.error((error as Error).message);
                 interaction.reply({
-                    content: `Hi ${interaction.user.username}, something went wrong. Please try again later.`,
+                    content: errorReply.replaceAll('${USERNAME}', interaction.user.username),
                     ephemeral: true
                 });
             }
         } catch (error) {
-            console.log(error);
+            log.error(error);
         }
     }
 });
