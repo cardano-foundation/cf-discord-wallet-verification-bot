@@ -1,6 +1,6 @@
 {
   "name": "cf-cardano-ballot-discord-verification-bot",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "description": "A Discord verification bot for linking Cardano wallets to Discord user accounts",
   "main": "bot.js",
