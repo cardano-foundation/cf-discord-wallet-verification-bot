@@ -1,6 +1,6 @@
 import "dotenv/config";
 import axios from 'axios';
-import { Client, GatewayIntentBits, Partials, Events, TextChannel, ButtonStyle, ButtonBuilder, ActionRowBuilder, ButtonInteraction } from 'discord.js';
+import { Client, GatewayIntentBits, Partials, Events, TextChannel, ButtonStyle, ButtonBuilder, ActionRowBuilder, ButtonInteraction, EmbedBuilder } from 'discord.js';
 import crypto from 'crypto';
 import bunyan from 'bunyan';
 
@@ -158,13 +158,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
                     .setURL(`${FRONTEND_URL}?action=verification&secret=${hashedDiscordId}|${randomSecret}`)
                     .setStyle(ButtonStyle.Link);
 
-                const reply = BOT_MESSAGE_SUCCESS || `Thank you ${interaction.user}, please follow this link to finish the verification process on our website!`;
+                const reply = BOT_MESSAGE_SUCCESS || `Thank you ${interaction.user}, a new secret was generated for you. Please copy and paste this secret into Cardano Ballot and sign it.`;
+                const embed = new EmbedBuilder()
+                    .setColor('#0099ff')
+                    .setDescription(`\`${hashedDiscordId}|${randomSecret}\``);
 
-                const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
                 await interaction.reply({
                     content: reply.replaceAll('${USERNAME}', interaction.user.username),
                     ephemeral: true,
-                    components: [actionRow],
+                    embeds: [embed],
                 });
             } catch (error) {
                 log.error((error as Error).message);

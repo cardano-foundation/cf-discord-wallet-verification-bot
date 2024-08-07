@@ -1,10 +1,11 @@
-FROM node:16-alpine
+FROM node:18-alpine
 ENV NODE_ENV production
 
 WORKDIR /opt/bot
 
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --only=production && \
+    npm install -g typescript
 COPY . .
 RUN npm run build
 

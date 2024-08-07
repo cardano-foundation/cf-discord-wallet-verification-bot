@@ -19,12 +19,12 @@ all:
 docker-publish:
   BUILD +all --PUSH=$PUSH
 
-voting-app:
+discord-wallet-verification-bot:
   ARG EARTHLY_TARGET_NAME
   LET DOCKER_IMAGE_NAME=${DOCKER_IMAGES_PREFIX}-${EARTHLY_TARGET_NAME}
 
   WAIT
-    FROM DOCKERFILE ./backend-services/${EARTHLY_TARGET_NAME}
+    FROM DOCKERFILE -f Dockerfile .
   END
   WAIT
     SAVE IMAGE ${DOCKER_IMAGE_NAME}
