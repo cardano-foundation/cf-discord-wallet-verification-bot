@@ -41,7 +41,7 @@ jobs:
           fi
 
   publish-discord-bot:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     env:
       APP_NAME: discord-wallet-verification-bot
     needs: build-version
