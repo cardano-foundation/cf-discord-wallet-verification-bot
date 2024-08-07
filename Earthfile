@@ -24,7 +24,7 @@ discord-wallet-verification-bot:
   LET DOCKER_IMAGE_NAME=${DOCKER_IMAGES_PREFIX}-${EARTHLY_TARGET_NAME}
 
   WAIT
-    FROM DOCKERFILE ./backend-services/${EARTHLY_TARGET_NAME}
+    FROM DOCKERFILE -f Dockerfile .
   END
   WAIT
     SAVE IMAGE ${DOCKER_IMAGE_NAME}
