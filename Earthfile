@@ -19,7 +19,7 @@ all:
 docker-publish:
   BUILD +all --PUSH=$PUSH
 
-voting-app:
+discord-wallet-verification-bot:
   ARG EARTHLY_TARGET_NAME
   LET DOCKER_IMAGE_NAME=${DOCKER_IMAGES_PREFIX}-${EARTHLY_TARGET_NAME}
 
