@@ -1,5 +1,5 @@
 import axios from 'axios';
-import bunyan, { LogLevel, LogLevelString } from 'bunyan';
+import bunyan, { LogLevelString } from 'bunyan';
 import crypto from 'crypto';
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Client, EmbedBuilder, Events, GatewayIntentBits, Partials, TextChannel } from 'discord.js';
 import "dotenv/config";
