@@ -1,10 +1,12 @@
-import "dotenv/config";
 import axios from 'axios';
-import { Client, GatewayIntentBits, Partials, Events, TextChannel, ButtonStyle, ButtonBuilder, ActionRowBuilder, ButtonInteraction, EmbedBuilder } from 'discord.js';
+import bunyan, { LogLevel, LogLevelString } from 'bunyan';
 import crypto from 'crypto';
-import bunyan from 'bunyan';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Client, EmbedBuilder, Events, GatewayIntentBits, Partials, TextChannel } from 'discord.js';
+import "dotenv/config";
 
-const log = bunyan.createLogger({ name: 'wallet-verification-discord-bot' });
+const log = bunyan.createLogger({
+    name: 'wallet-verification-discord-bot',
+});
 
 const {
     DISCORD_TOKEN,
@@ -24,7 +26,10 @@ const {
     BOT_BUTTON_LABEL,
     BOT_SUCCESS_BUTTON_LABEL,
     BOT_ERROR_MESSAGE,
+    LOG_LEVEL = "info"
 } = process.env;
+
+log.level(LOG_LEVEL as LogLevelString);
 
 const authenticationHeader = {};
 
@@ -74,36 +79,41 @@ client.once(Events.ClientReady, async (client) => {
                 .setCustomId('start_wallet_verification')
                 .setStyle(ButtonStyle.Success);
 
-		    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+            const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
 
             channel.send({
                 content: BOT_MESSAGE_WELCOME || 'Click the button below to verify your wallet',
                 components: [actionRow],
             })
         } else {
-            log.debug('The bot has already posted the button into this channel');
+            log.debug('Button is already posted in this channel..');
         }
     }
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
+    log.debug("Start verification.")
     if (interaction.user.bot) return;
 
     if (interaction.isButton) {
         const errorReply = BOT_ERROR_MESSAGE || `Hi ${interaction.user.username}, something went wrong. Please try again later.`;
+        log.debug("Start interaction.")
 
         interaction = (interaction as ButtonInteraction);
         try {
             const discordUserId = interaction.user.id;
+            log.debug("Fetch guilds from guild id.")
             const guild = await client.guilds.fetch(GUILD_ID);
 
             try {
+                log.debug("Fetch guild members.")
                 const guildMember = await guild.members.fetch({
                     user: discordUserId,
                     force: true,
                 });
 
                 if (!guildMember.roles.cache.hasAny(VERIFIED_ROLE_ID)) {
+                    log.debug("User %s is not yet verified.", interaction.user.username);
                     const reply = BOT_MESSAGE_RULES_NOT_ACCEPTED || `Hi ${interaction.user.username}, you need to accept our terms and conditions by reacting with a 🚀 emoji to the message within the verification channel. Click the button again once you have accepted the terms and conditions.`;
 
                     interaction.reply({
@@ -129,6 +139,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const response = await axios.get(`${BACKEND_BASE_URL}/is-verified/${hashedDiscordId}`, authenticationHeader);
 
             if (response.data.verified) {
+                log.debug("User %s has already verified a verified wallet.", interaction.user.username);
                 const reply = BOT_MESSAGE_ALREADY_VERIFIED || `Hi ${interaction.user.username}, you have already verified your wallet!`;
 
                 interaction.reply({
@@ -140,12 +151,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
             const randomSecret = generateAuthenticationSecret();
             try {
+                log.debug("Start verification.");
                 const startVerificationResponse = await axios.post(`${BACKEND_BASE_URL}/start-verification`, {
                     discordIdHash: hashedDiscordId,
                     secret: randomSecret,
                 }, authenticationHeader);
 
                 if (startVerificationResponse.status !== 200) {
+                    log.error("Failed to start verification with wallet-verification backend. %s", startVerificationResponse.data);
                     interaction.reply({
                         content: errorReply.replaceAll('${USERNAME}', interaction.user.username),
                         ephemeral: true
