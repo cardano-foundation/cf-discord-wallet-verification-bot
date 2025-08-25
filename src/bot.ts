@@ -86,7 +86,7 @@ client.once(Events.ClientReady, async (client) => {
                 components: [actionRow],
             })
         } else {
-            log.debug('Button is already posted in this channel..');
+            log.debug('Button is already posted in this channel.');
         }
     }
 });
