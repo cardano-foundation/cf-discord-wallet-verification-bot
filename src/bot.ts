@@ -139,7 +139,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
             const response = await axios.get(`${BACKEND_BASE_URL}/is-verified/${hashedDiscordId}`, authenticationHeader);
 
             if (response.data.verified) {
-                log.debug("User %s has already verified a verified wallet.", interaction.user.username);
+                log.debug("User %s has already verified a wallet.", interaction.user.username);
                 const reply = BOT_MESSAGE_ALREADY_VERIFIED || `Hi ${interaction.user.username}, you have already verified your wallet!`;
 
                 interaction.reply({
