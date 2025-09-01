@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/cardano-foundation/cf-discord-wallet-verification-bot/compare/v1.1.0...v1.1.1) (2025-09-01)
+
+
+### Bug Fixes
+
+* logging ([1ba6294](https://github.com/cardano-foundation/cf-discord-wallet-verification-bot/commit/1ba6294665c3b773f2ade898e1f1d28a0769eb62))
+
 ## [1.1.0](https://github.com/cardano-foundation/cf-discord-wallet-verification-bot/compare/v1.0.0...v1.1.0) (2024-08-07)
 
 
