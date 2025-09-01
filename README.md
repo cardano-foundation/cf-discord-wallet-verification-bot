@@ -15,8 +15,8 @@ This bot aims to provide a wallet and user association based on the user's disco
 2. [Create a discord app](https://discord.com/developers/docs/getting-started)
 3. Click on the menu entry `Bot` (under Settings) and press "View Token" to get a token and copy it into the .env file as `DISCORD_TOKEN=<token>`
 4. Enable "MESSAGE CONTENT INTENT" under `Previliged Gateway Intents` at the bottom of this page
-5. Goto the `OAuth2 > URL Generator` and activate the "bot" scope
-6. Within the bot perimssion section (below) check `Read Messages/View Channels`, `Send Messages`, `Embed Links`, `Read Message History` and `Use Embedded Activities`
+5. Goto the `OAuth2 > URL Generator` and activate the `bot` and `applications.commands` scope
+6. Within the bot perimssion section (below) check `View Channels`, `Send Messages`, `Embed Links`, `Read Message History` and `Use Embedded Activities`
 7. Copy the generated URL and open it in a new tab
 8. Select the server you want to add the bot to and press "Authorize"
 9. `OPTIONAL` Change the verification level to "Highest" in the server settings under "Safety Setup" to make sure a user can only link accounts to wallets that have a verified phone number on Discord `It prevents users from creating multiple accounts and linking them to different wallets`

@@ -31,5 +31,6 @@ discord-wallet-verification-bot:
   END
   DO functions+DOCKER_TAG_N_PUSH \
      --PUSH=$PUSH \
+     --DOCKER_REGISTRIES=${DOCKER_REGISTRIES} \
      --DOCKER_IMAGE_NAME=${DOCKER_IMAGE_NAME} \
      --DOCKER_IMAGES_EXTRA_TAGS="${DOCKER_IMAGES_EXTRA_TAGS}"
